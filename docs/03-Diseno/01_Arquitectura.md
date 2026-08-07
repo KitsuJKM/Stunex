@@ -51,7 +51,7 @@ MySQL                    Bucket Storage
 - Almacena el access token JWT de forma segura en el dispositivo mediante `flutter_secure_storage` (Keystore en Android, Keychain en iOS), evitando su exposición en almacenamiento no cifrado.
 - Adjunta automáticamente el JWT almacenado en cada solicitud a endpoints protegidos, mediante interceptores del cliente HTTP `dio`.
 - Gestiona el estado de la aplicación (por ejemplo, sesión del usuario autenticado) mediante `Provider`.
-- Ante una respuesta 401 del backend, el interceptor de `dio` intercepta el error de forma centralizada y dirige al usuario nuevamente al flujo de inicio de sesión, sin necesidad de manejar el caso en cada pantalla individualmente.
+- Ante una respuesta 401 del backend, el interceptor de `dio` permite manejar de forma centralizada los casos de token inválido o expirado, sin duplicar esa lógica en cada pantalla individualmente. La acción concreta de navegación ante ese caso se define en `02_Arquitectura_Movil.md`.
 
 ## 3.2 Backend FastAPI (API REST)
 
@@ -117,7 +117,7 @@ Esto permite que el backend pueda reiniciarse o escalar horizontalmente (en un e
 
 La arquitectura elegida cumple este requisito mediante dos decisiones combinadas:
 
-1. **Organización por dominio (sección 4.1):** al estar el backend dividido en `auth/`, `profile/` y futuros dominios independientes (`subjects/`, `tasks/`, etc.), un nuevo módulo se agrega como un nuevo dominio autocontenido, sin tocar los archivos de `auth/`.
+1. **Organización por dominio (sección 4.1):** al estar el backend dividido en `auth/`, `profile/` y futuros dominios independientes (`materias/`, `tareas/`, etc.), un nuevo módulo se agrega como un nuevo dominio autocontenido, sin tocar los archivos de `auth/`.
 
 2. **Validación de JWT mediante `Depends()` por ruta, sin middleware global:** cada endpoint nuevo que requiera protección simplemente declara la dependencia de autenticación existente (`Depends(get_current_user)` o equivalente) al definirse, en lugar de depender de un middleware global que intercepte todas las rutas del sistema.
 
@@ -180,7 +180,7 @@ En conjunto, un módulo nuevo (por ejemplo, Materias) se construye como un domin
 | Almacenamiento seguro del token (`flutter_secure_storage`) | — | RNF-002, RNF-012 | — |
 | Comunicación exclusivamente HTTPS | — | RNF-001 | — |
 | Hashing de contraseñas con bcrypt | RF-005 | RNF-007 | RN-011, RN-012 |
-| Backend stateless | RF-009 | RNF-015 | RN-009 |
+| Backend stateless | RF-009, RF-010, RF-011 | RNF-015 | RN-009 |
 | Servicio de correo (Resend) para recuperación | RF-012 | — | — |
 
 ---
