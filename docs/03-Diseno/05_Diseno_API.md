@@ -37,7 +37,7 @@ Esta tabla sirve como lista de verificación durante la implementación: todo en
 |---|---|---|---|---|
 | `POST` | `/api/v1/auth/register` | Público | CU-001 | RF-001 a RF-005 |
 | `POST` | `/api/v1/auth/login` | Público | CU-002 | RF-006 a RF-008, RF-011, RF-017 |
-| `POST` | `/api/v1/auth/forgot-password` | Público | CU-004 | RF-012 |
+| `POST` | `/api/v1/auth/forgot-password` | Público | CU-004 | RF-012, RF-013 |
 | `POST` | `/api/v1/auth/reset-password` | Público | CU-004 | RF-013, RF-014 |
 | `GET` | `/api/v1/profile/me` | **Protegido** | CU-006 | RF-015 |
 | `PATCH` | `/api/v1/profile/me` | **Protegido** | CU-007 | RF-016 |
@@ -255,8 +255,8 @@ Ninguna respuesta de la API, en ningún endpoint, incluye `password_hash` ni el 
 | `POST /auth/login` | RF-006 a RF-008, RF-011, RF-017 | RNF-004, RNF-005, RNF-008 | RN-005, RN-006, RN-010, RN-014 | HU-002, CU-002 |
 | `POST /auth/forgot-password` | RF-012, RF-013 | RNF-009, RNF-010 | RN-014, RN-016, RN-017 | HU-004, CU-004 |
 | `POST /auth/reset-password` | RF-013, RF-014 | RNF-009 | RN-015, RN-016 | HU-005, CU-004 |
-| `GET /profile/me` | RF-015 | — | RN-013, RN-018 | HU-007, CU-006 |
-| `PATCH /profile/me` | RF-016 | — | RN-013, RN-018, RN-019 | HU-008, CU-007 |
+| `GET /profile/me` | RF-010, RF-015 | — | RN-013, RN-018 | HU-007, CU-006 |
+| `PATCH /profile/me` | RF-010, RF-016 | — | RN-013, RN-018, RN-019 | HU-008, CU-007 |
 | Ausencia intencional de endpoint de logout | RF-009 | RNF-015 | RN-008, RN-009 | HU-003, CU-003 |
 | Respuesta genérica en login | RF-008 | — | RN-014 | CU-002 |
 | Respuesta genérica en forgot-password | RF-012 | — | RN-014 | CU-004 |
