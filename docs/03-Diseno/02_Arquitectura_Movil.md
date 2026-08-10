@@ -199,21 +199,21 @@ La aplicación aplica validaciones básicas en los formularios de registro, inic
 
 # 11. Trazabilidad de este documento
 
-| Decisión de diseño | RF relacionados | RNF relacionados | HU/CU relacionados |
-|---|---|---|---|
-| Estructura `lib/` por dominio (`auth/`, `profile/`, `core/`) | — | — | — |
-| Instancia central de `dio` con `baseUrl` por variable de entorno | — | RNF-002 | — |
-| Interceptor de request: inyección automática del JWT | RF-010, RF-011 | — | HU-006 |
-| Interceptor de response: manejo centralizado de 401 | RF-010 | — | CU-005 |
-| Redirección a inicio de sesión y eliminación del token ante 401 | RF-010 | — | CU-002, CU-005 |
-| `AuthProvider` (registro, login, logout, recuperación) | RF-001 a RF-014, RF-017 | — | HU-001 a HU-006, CU-001 a CU-005 |
-| `ProfileProvider` (consulta y edición de nombre) | RF-015, RF-016 | — | HU-007, HU-008, CU-006, CU-007 |
-| Almacenamiento del token con `flutter_secure_storage` | RF-007, RF-009 | RNF-002, RNF-012 | RN-008, CU-002, CU-003 |
-| Verificación de sesión existente al iniciar la app | — | — | — |
-| Validación de formato de correo en cliente | RF-003 | — | CU-001 |
-| Validación de longitud de contraseña en cliente | RF-004 | RNF-006 | CU-001, CU-004 |
-| Interfaz Material Design 3 | — | RNF-014 | — |
-| Compatibilidad mínima Android API 26 | — | RNF-024 | — |
+| Decisión de diseño | RF relacionados | RNF relacionados | RN relacionados | HU/CU relacionados |
+|---|---|---|---|---|
+| Estructura `lib/` por dominio (`auth/`, `profile/`, `core/`) | — | — | — | — |
+| Instancia central de `dio` con `baseUrl` por variable de entorno | — | RNF-002 | — | — |
+| Interceptor de request: inyección automática del JWT | RF-010, RF-011 | — | — | HU-006 |
+| Interceptor de response: manejo centralizado de 401 | RF-010 | — | RN-013 | CU-005 |
+| Redirección a inicio de sesión y eliminación del token ante 401 | RF-010 | — | RN-013 | CU-002, CU-005 |
+| `AuthProvider` (registro, login, logout, recuperación) | RF-001 a RF-014, RF-017 | — | RN-008, RN-014 | HU-001 a HU-006, CU-001 a CU-005 |
+| `ProfileProvider` (consulta y edición de nombre) | RF-015, RF-016 | — | RN-018, RN-019 | HU-007, HU-008, CU-006, CU-007 |
+| Almacenamiento del token con `flutter_secure_storage` | RF-007, RF-009 | RNF-002, RNF-012 | RN-008, RN-009 | CU-002, CU-003 |
+| Verificación de sesión existente al iniciar la app | RF-011 | — | — | CU-002 |
+| Validación de formato de correo en cliente | RF-003 | — | RN-002 | CU-001 |
+| Validación de longitud de contraseña en cliente | RF-004 | RNF-006 | RN-003 | CU-001, CU-004 |
+| Interfaz Material Design 3 | — | RNF-014 | — | — |
+| Compatibilidad mínima Android API 26 | — | RNF-024 | — | — |
 
 ---
 
