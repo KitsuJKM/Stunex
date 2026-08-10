@@ -77,29 +77,29 @@ No se elimina el registro tras su uso: se conserva como evidencia de auditoría 
 # 4. Diagrama entidad-relación
 
 ```text
-┌────────────────────────────────┐
-│              users              │
-├────────────────────────────────┤
-│ PK  id               INT        │
-│     name             VARCHAR(100)│
-│ UQ  email             VARCHAR(255)│
-│     password_hash     VARCHAR(60)│
-│     created_at        TIMESTAMP │
-│     updated_at        TIMESTAMP │
-└────────────────┬─────────────────┘
-                  │ 1
-                  │
-                  │ N
-┌────────────────┴─────────────────┐
-│      password_reset_tokens        │
-├────────────────────────────────┤
-│ PK  id               INT        │
-│ FK  user_id           INT       │  ──> users.id
-│ UQ  token_hash         CHAR(64)  │
-│     expires_at         TIMESTAMP │
-│     used_at            TIMESTAMP NULL │
-│     created_at         TIMESTAMP │
-└────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│                      users                       │
+├──────────────────────────────────────────────────┤
+│ PK  id             INT                           │
+│     name           VARCHAR(100)                  │
+│ UQ  email          VARCHAR(255)                  │
+│     password_hash  VARCHAR(60)                   │
+│     created_at     TIMESTAMP                     │
+│     updated_at     TIMESTAMP                     │
+└──────────────────────────────────────────────────┘
+               │ 1
+               │
+               │ N
+┌──────────────────────────────────────────────────┐
+│              password_reset_tokens               │
+├──────────────────────────────────────────────────┤
+│ PK  id             INT                           │
+│ FK  user_id        INT             --> users.id  │
+│ UQ  token_hash     CHAR(64)                      │
+│     expires_at     TIMESTAMP                     │
+│     used_at        TIMESTAMP NULL                │
+│     created_at     TIMESTAMP                     │
+└──────────────────────────────────────────────────┘
 ```
 
 Un usuario (`users`) puede tener cero o varios tokens de restablecimiento (`password_reset_tokens`) a lo largo del tiempo (relación 1:N), correspondientes a distintas solicitudes de recuperación (RF-012) realizadas en momentos diferentes.
@@ -111,7 +111,7 @@ Un usuario (`users`) puede tener cero o varios tokens de restablecimiento (`pass
 - **Unicidad de `email`:** índice `UNIQUE` sobre `users.email`, aplicado a nivel de esquema de base de datos y no solo en la capa de aplicación (RNF-018, RN-001). Esto garantiza la unicidad incluso ante condiciones de carrera que la validación de aplicación por sí sola no podría prevenir.
 - **Clave foránea `password_reset_tokens.user_id → users.id`:** protege la relación entre ambas tablas (RNF-018). Su comportamiento ante eliminación es `ON DELETE CASCADE`: si un registro de `users` fuera eliminado, sus tokens de restablecimiento asociados se eliminarían junto con él, ya que no tiene sentido conservar tokens de recuperación de una cuenta que ya no existe. En el MVP actual esta cláusula no se ejecuta en la práctica, dado que ningún RF contempla eliminación de cuentas (sección 2.2), pero se define como comportamiento correcto del esquema.
 - **Unicidad de `token_hash`:** índice `UNIQUE` sobre `password_reset_tokens.token_hash`, evitando colisiones y permitiendo una búsqueda directa y eficiente del token al validarlo (RF-014).
-- **Índice sobre `user_id`:** además de servir como clave foránea, permite consultar eficientemente los tokens asociados a un usuario.
+- **Índice sobre `user_id`:** además de servir como clave foránea, soporta la verificación del límite de solicitudes de recuperación de contraseña por usuario en una ventana de tiempo (RNF-010, RN-017), mediante una consulta que filtra los tokens del usuario por `user_id` y `created_at`. Para ese patrón de consulta (tokens de un mismo usuario ordenados/filtrados por fecha de creación), un índice compuesto `(user_id, created_at)` sería más eficiente que un índice simple sobre `user_id`, y se evalúa como la definición concreta a aplicar en la migración correspondiente (sección 7). Cabe aclarar que esta consulta solo cubre el caso en que el correo corresponde a una cuenta existente (con `user_id` resuelto); el límite también debe aplicarse cuando el correo no existe (RN-014), caso en el que no hay `user_id` ni tokens que consultar en esta tabla — ese escenario se resuelve mediante la dependencia de rate limiting ya documentada en `03_Arquitectura_Backend.md` (secciones 4.4 y 7.6), no mediante esta consulta.
 
 ---
 
@@ -143,6 +143,7 @@ El versionado del esquema de base de datos se gestiona mediante **Alembic**, con
 | `token_hash` almacenado con SHA-256, no en texto plano | RF-013, RF-014 | — | — | CU-004 |
 | `expires_at` (vigencia de 15 minutos) | RF-013 | RNF-009 | RN-016 | HU-004, CU-004 |
 | `used_at` para uso único del token | RF-013, RF-014 | — | RN-015 | HU-004, HU-005, CU-004 |
+| Índice sobre `user_id` como soporte del límite de solicitudes de recuperación | — | RNF-010 | RN-017 | CU-004 |
 | No persistencia de tokens JWT (backend stateless) | RF-009 | RNF-015 | RN-009 | CU-003, CU-005 |
 | No almacenamiento de datos personales adicionales | — | RNF-011 | RN-020 | CU-001, CU-006 |
 | Migraciones versionadas con Alembic | — | — | — | — |
