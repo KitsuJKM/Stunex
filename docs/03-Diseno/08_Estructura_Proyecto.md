@@ -156,7 +156,27 @@ Consistente con la configuración por carpeta (no global) y con RNF-002, cada co
 | API key de Resend | `backend/.env.example` | Servicio de envío de correo para recuperación de contraseña, ya decidido en `01_Arquitectura.md` (sección 6.6) |
 | `baseUrl` de la API | Configuración de compilación de `mobile/` | Consumida por el cliente `dio`, ya definida como variable de entorno de compilación en `02_Arquitectura_Movil.md` (sección 4.1); este documento no redefine el mecanismo concreto de esa variable, solo señala que tampoco se hardcodea ni se versiona con un valor real |
 
-**`.env.example` se versiona en el repositorio**, documentando qué variables existen (sus nombres) sin contener ningún valor real ni secreto. El archivo `.env` real de cada componente **nunca se versiona**: queda excluido mediante `.gitignore` (ya presente en la raíz del repositorio, entrada `.env`), conforme a RNF-002 ("las credenciales de base de datos, el secreto de firma JWT y las claves del Bucket Storage se gestionan mediante variables de entorno, nunca embebidas en el código fuente ni en el repositorio").
+**`.env.example` se versiona en el repositorio**, documentando qué variables existen (sus nombres) sin contener ningún valor real ni secreto. El archivo `.env` real de cada componente **nunca se versiona**: queda excluido mediante el `.gitignore` de la raíz del repositorio, que a la fecha de este documento ya incluye una entrada `.env`, conforme a RNF-002 ("las credenciales de base de datos, el secreto de firma JWT y las claves del Bucket Storage se gestionan mediante variables de entorno, nunca embebidas en el código fuente ni en el repositorio").
+
+## 6.1 Contenido mínimo esperado del `.gitignore` de la raíz
+
+Este documento no crea el `.gitignore` (su creación corresponde a la fase de implementación); documenta el contenido mínimo que debe cubrir, dado que es compartido por `backend/` y `mobile/` en la estructura monorepo (sección 2):
+
+```gitignore
+# Variables de entorno (RNF-002)
+.env
+
+# Python (backend/)
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Flutter/Dart (mobile/)
+build/
+.dart_tool/
+.packages
+```
 
 ---
 
