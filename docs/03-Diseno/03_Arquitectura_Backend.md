@@ -47,6 +47,7 @@ backend/
 - `profile/` **no tiene `models.py` propio**, porque no posee tabla propia: opera sobre el modelo `User`, definido en `auth/models.py` (ver sección 5).
 - `core/` no es un dominio de negocio; contiene exclusivamente infraestructura y utilidades compartidas por todos los dominios (ver sección 4).
 - Esta estructura es la aplicación concreta del principio de modularidad por dominio ya definido en `01_Arquitectura.md` (sección 4.1) y respalda RNF-016 y RNF-017.
+- El nombre y la ubicación de la carpeta raíz del backend dentro del repositorio (junto con la aplicación móvil) aún no están definidos; eso corresponde a `08_Estructura_Proyecto.md`. Este documento se enfoca únicamente en la organización interna del backend.
 
 ---
 
@@ -119,7 +120,7 @@ Esta decisión es consistente con el principio de simplicidad sobre sobre-ingeni
 
 **NO contiene:** los endpoints de login, registro o recuperación (esos viven en `auth/router.py` y `auth/service.py`); `security.py` solo provee las utilidades que esos endpoints consumen.
 
-## 4.4 Dependencia de rate limiting
+## 4.4 `rate_limit.py`
 
 **Contiene:** una dependencia de FastAPI reutilizable que implementa el límite de solicitudes por ventana de tiempo (RF-017, RNF-008, RNF-010), parametrizable en número de intentos y duración de la ventana.
 
@@ -191,7 +192,7 @@ Cada ruta protegida declara `Depends(get_current_user)` en su firma (RF-010, RN-
 3. Si el token es inválido, está expirado o falta, la solicitud se rechaza con código 401 (RF-010), sin llegar a ejecutar la lógica de `service.py`.
 4. Si el token es válido, resuelve el usuario autenticado y lo entrega al endpoint (CU-005).
 
-No existe middleware global que intercepte todas las rutas: la protección es explícita por ruta, tal como se decidió en `01_Arquitectura.md` (sección 4.3) y se detalla en la sección 5 de ese mismo documento.
+No existe middleware global que intercepte todas las rutas: la protección es explícita por ruta, tal como se argumenta en `01_Arquitectura.md` (sección 5) y se lista como decisión en la sección 6.2 de ese mismo documento.
 
 ## 7.3 Hashing de contraseñas
 
