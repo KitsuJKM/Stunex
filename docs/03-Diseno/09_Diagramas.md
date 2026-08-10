@@ -93,15 +93,20 @@ sequenceDiagram
 
     U->>App: Ingresa correo y contraseña
     App->>API: POST /api/v1/auth/login
-    API->>DB: Consulta password_hash por email
-    DB-->>API: password_hash
-    API->>API: Verifica bcrypt (RF-005, RN-012)
-    alt Credenciales válidas
-        API->>API: Genera JWT (HS256, expira en 7 días)
-        API-->>App: 200 OK (access_token)
-        App->>SS: Almacena access_token
-    else Credenciales inválidas
-        API-->>App: 401 Unauthorized (mensaje genérico)
+    API->>API: Verifica rate limiting (RF-017, RNF-008, RN-010)
+    alt Limite de intentos superado
+        API-->>App: 429 Too Many Requests
+    else Limite no superado
+        API->>DB: Consulta password_hash por email
+        DB-->>API: password_hash
+        API->>API: Verifica bcrypt (RF-005, RN-012)
+        alt Credenciales válidas
+            API->>API: Genera JWT (HS256, expira en 7 días)
+            API-->>App: 200 OK (access_token)
+            App->>SS: Almacena access_token
+        else Credenciales inválidas
+            API-->>App: 401 Unauthorized (mensaje genérico)
+        end
     end
 ```
 
@@ -131,7 +136,7 @@ sequenceDiagram
     end
 ```
 
-**Descripción:** el primer diagrama (5.1) cubre la generación del token en el login: verificación de credenciales contra el hash bcrypt almacenado, generación del JWT firmado con HS256 con expiración de 7 días, y su almacenamiento en `flutter_secure_storage`. El segundo diagrama (5.2) cubre el acceso a un endpoint protegido: el interceptor de `dio` inyecta el token almacenado, `Depends(get_current_user)` lo valida en el backend, y ante un 401 el interceptor elimina el token y redirige al inicio de sesión.
+**Descripción:** el primer diagrama (5.1) cubre, antes de procesar las credenciales, la verificación del límite de intentos de inicio de sesión (rate limiting: máximo 5 intentos fallidos en 15 minutos por cuenta/IP, respondiendo 429 si se supera); si el límite no se supera, continúa con la generación del token: verificación de credenciales contra el hash bcrypt almacenado, generación del JWT firmado con HS256 con expiración de 7 días, y su almacenamiento en `flutter_secure_storage`. El segundo diagrama (5.2) cubre el acceso a un endpoint protegido: el interceptor de `dio` inyecta el token almacenado, `Depends(get_current_user)` lo valida en el backend, y ante un 401 el interceptor elimina el token y redirige al inicio de sesión.
 
 **Referencia:** `03_Arquitectura_Backend.md`, sección 7.1 (generación del JWT) y 7.2 (validación mediante `Depends()`); `05_Diseno_API.md`, secciones 4.2 (`POST /auth/login`) y 4.5 (`GET /profile/me`); `02_Arquitectura_Movil.md`, sección 5 (comportamiento concreto ante una respuesta 401) y sección 7 (almacenamiento seguro del token).
 
@@ -149,15 +154,20 @@ sequenceDiagram
 
     U->>App: Solicita recuperación (ingresa correo)
     App->>API: POST /api/v1/auth/forgot-password
-    API->>DB: Busca usuario por email
-    alt Correo corresponde a una cuenta
-        API->>API: Genera token y calcula su hash SHA-256
-        API->>DB: INSERT password_reset_tokens (expires_at +15 min, used_at NULL)
-        API->>R: Envía correo con el token
-    else Correo no existe
-        Note over API: No se genera ningún token
+    API->>API: Verifica rate limiting por correo (RNF-010, RN-017)
+    alt Limite de solicitudes superado
+        API-->>App: 429 Too Many Requests
+    else Limite no superado
+        API->>DB: Busca usuario por email
+        alt Correo corresponde a una cuenta
+            API->>API: Genera token y calcula su hash SHA-256
+            API->>DB: INSERT password_reset_tokens (expires_at +15 min, used_at NULL)
+            API->>R: Envía correo con el token
+        else Correo no existe
+            Note over API: No se genera ningún token
+        end
+        API-->>App: 200 OK (mensaje genérico, idéntico en ambos casos)
     end
-    API-->>App: 200 OK (mensaje genérico, idéntico en ambos casos)
 
     U->>App: Ingresa token y nueva contraseña
     App->>API: POST /api/v1/auth/reset-password
@@ -173,7 +183,7 @@ sequenceDiagram
     end
 ```
 
-**Descripción:** la solicitud de recuperación (`forgot-password`) responde siempre con el mismo mensaje genérico, exista o no una cuenta asociada al correo; internamente, solo si la cuenta existe se genera un token (almacenado como hash SHA-256, con vigencia de 15 minutos) y se envía por correo mediante Resend. El restablecimiento (`reset-password`) valida que el token exista, esté vigente y no haya sido usado antes de actualizar la contraseña, y marca el token como usado mediante `used_at` para impedir su reutilización.
+**Descripción:** antes de procesar la solicitud de recuperación, se verifica el límite de solicitudes por correo (rate limiting: máximo 1 solicitud cada 5 minutos, respondiendo 429 si se supera). Si el límite no se supera, `forgot-password` responde siempre con el mismo mensaje genérico, exista o no una cuenta asociada al correo; internamente, solo si la cuenta existe se genera un token (almacenado como hash SHA-256, con vigencia de 15 minutos) y se envía por correo mediante Resend. El restablecimiento (`reset-password`) valida que el token exista, esté vigente y no haya sido usado antes de actualizar la contraseña, y marca el token como usado mediante `used_at` para impedir su reutilización.
 
 **Referencia:** `03_Arquitectura_Backend.md`, sección 7.5 (recuperación de contraseña); `04_Modelo_Base_de_Datos.md`, secciones 3.1 (almacenamiento hasheado del token) y 3.2 (uso único mediante `used_at`); `05_Diseno_API.md`, secciones 4.3 (`POST /auth/forgot-password`) y 4.4 (`POST /auth/reset-password`); `01_Arquitectura.md`, sección 6.6 (Resend como servicio de correo).
 
@@ -185,9 +195,9 @@ sequenceDiagram
 |---|---|---|---|---|
 | 1 — Arquitectura general | — | RNF-001 | — | — |
 | 2 — Entidad-relación | RF-001, RF-002, RF-005, RF-013 | RNF-007, RNF-018 | RN-001, RN-011, RN-012, RN-015, RN-016 | CU-001, CU-004 |
-| 3.1 — Login exitoso | RF-005 a RF-008, RF-011 | RNF-004, RNF-005 | RN-012, RN-014 | HU-002, CU-002 |
+| 3.1 — Login exitoso | RF-005 a RF-008, RF-011, RF-017 | RNF-004, RNF-005, RNF-008 | RN-010, RN-012, RN-014 | HU-002, CU-002 |
 | 3.2 — Acceso a endpoint protegido | RF-010, RF-011 | — | RN-013 | HU-006, CU-005, CU-006 |
-| 4 — Recuperación de contraseña | RF-012, RF-013, RF-014 | RNF-009 | RN-014, RN-015, RN-016 | HU-004, HU-005, CU-004 |
+| 4 — Recuperación de contraseña | RF-012, RF-013, RF-014 | RNF-009, RNF-010 | RN-014, RN-015, RN-016, RN-017 | HU-004, HU-005, CU-004 |
 
 ---
 
