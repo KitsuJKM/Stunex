@@ -1,21 +1,22 @@
-import os
 from pathlib import Path
 
-from dotenv import load_dotenv
-
-load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings:
-    jwt_secret_key: str = os.environ["JWT_SECRET_KEY"]
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent.parent / ".env"
+    )
 
-    mysql_host: str = os.environ["MYSQL_HOST"]
-    mysql_port: int = int(os.environ["MYSQL_PORT"])
-    mysql_user: str = os.environ["MYSQL_USER"]
-    mysql_password: str = os.environ["MYSQL_PASSWORD"]
-    mysql_database: str = os.environ["MYSQL_DATABASE"]
+    jwt_secret_key: str
 
-    resend_api_key: str = os.environ.get("RESEND_API_KEY", "")
+    mysql_host: str
+    mysql_port: int
+    mysql_user: str
+    mysql_password: str
+    mysql_database: str
+
+    resend_api_key: str = ""
 
     @property
     def database_url(self) -> str:
