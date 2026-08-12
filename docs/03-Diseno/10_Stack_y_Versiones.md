@@ -131,6 +131,8 @@ Como ya anticipó `04_Modelo_Base_de_Datos.md` (sección 5), el rate limiting de
 | slowapi para rate limiting en login | RF-017 | RNF-008 | RN-010 | HU-002, CU-002 |
 | Consulta en BD para rate limiting en recuperación | — | RNF-010 | RN-017 | CU-004 |
 
+**Nota sobre RNF-006 en la fila "Pre-hash SHA-256 antes de `bcrypt`":** RNF-006 aparece en esa fila porque la decisión del pre-hash existe precisamente para que RNF-006 (8-128 caracteres) pueda seguir cumpliéndose sin que `bcrypt` lance `ValueError` (ver secciones 4.2 a 4.4). El pre-hash **no implementa ni forma parte de RNF-006, y no lo modifica**: RNF-006 y RN-003 permanecen vigentes tal como están definidos en `docs/02-Requisitos/02_Requisitos_No_Funcionales.md` y `docs/02-Requisitos/05_Reglas_de_Negocio.md`, respectivamente.
+
 ---
 
 # 8. Nota final
