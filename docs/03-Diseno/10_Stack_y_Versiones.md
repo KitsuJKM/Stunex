@@ -25,6 +25,7 @@ Este documento fija las versiones de los componentes ya decididos en documentos 
 | Alembic | **1.19.1** | `04_Modelo_Base_de_Datos.md`, sección 7 |
 | Pydantic | **2.13.4** | RNF-019 (esquemas de `schemas.py`, `03_Arquitectura_Backend.md` sección 3.4) |
 | pydantic-settings | **2.15.0** | RNF-002 (carga de variables de entorno en `core/config.py`, `03_Arquitectura_Backend.md` sección 4.1) |
+| email-validator | **2.3.0** | RF-003, RN-002 (requerido por `pydantic.EmailStr` en `auth/schemas.py`) |
 | PyJWT | **2.13.0** | RF-007, RNF-005 (HS256) |
 | bcrypt | **5.0.0** | RF-005, RF-014, RNF-007, RN-011, RN-012 |
 | resend | **2.35.0** | RF-012, `01_Arquitectura.md` sección 6.6 |
