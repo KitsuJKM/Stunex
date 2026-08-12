@@ -20,9 +20,11 @@ Este documento fija las versiones de los componentes ya decididos en documentos 
 |---|---|---|
 | Python | **3.13.x** | Runtime base |
 | FastAPI | **0.141.1** | RNF-019 |
+| uvicorn | **0.52.1** | Servidor ASGI que ejecuta la aplicación FastAPI |
 | SQLAlchemy | **2.0.51** | `04_Modelo_Base_de_Datos.md` |
 | Alembic | **1.19.1** | `04_Modelo_Base_de_Datos.md`, sección 7 |
 | Pydantic | **2.13.4** | RNF-019 (esquemas de `schemas.py`, `03_Arquitectura_Backend.md` sección 3.4) |
+| pydantic-settings | **2.15.0** | RNF-002 (carga de variables de entorno en `core/config.py`, `03_Arquitectura_Backend.md` sección 4.1) |
 | PyJWT | **2.13.0** | RF-007, RNF-005 (HS256) |
 | bcrypt | **5.0.0** | RF-005, RF-014, RNF-007, RN-011, RN-012 |
 | resend | **2.35.0** | RF-012, `01_Arquitectura.md` sección 6.6 |
@@ -35,6 +37,7 @@ Este documento fija las versiones de los componentes ya decididos en documentos 
 - **PyJWT, no python-jose:** python-jose está prácticamente sin mantenimiento (último release con más de un año de antigüedad respecto a la fecha de esta investigación) y las propias guías de FastAPI migraron su recomendación de python-jose a PyJWT. Para HS256 (RNF-005), PyJWT es autosuficiente y no requiere la dependencia adicional `cryptography` que sí necesitan los algoritmos asimétricos.
 - **PyMySQL, no mysqlclient ni mysql-connector-python:** `mysqlclient` exige un toolchain de compilación en C y headers de `libmysqlclient` en el sistema, lo que introduce fricción de instalación distinta entre los dos entornos de desarrollo del equipo (RF-006 a RF-016 no dependen de rendimiento de driver que justifique esa complejidad). `mysql-connector-python` es más pesado y su integración con SQLAlchemy está menos probada en la práctica. PyMySQL es Python puro, se instala sin dependencias nativas, y es suficiente para el volumen de un MVP académico.
 - **SQLAlchemy 2.0.x, no 2.1:** la serie 2.1 solo tiene versiones beta a la fecha de esta investigación (última: `2.1.0b3`). Se fija 2.0.51 por ser la última versión estable de la serie 2.x, consistente con SQLAlchemy como ORM ya establecido en `01_Arquitectura.md` (sección 3.3) y con priorizar estabilidad sobre lo más reciente.
+- **pydantic-settings para `core/config.py`:** se usa `pydantic-settings` (no `python-dotenv` de forma directa) para cargar y validar las variables de entorno de RNF-002, consistente con que el proyecto ya usa Pydantic para validación declarativa (`03_Arquitectura_Backend.md` sección 3.4). `python-dotenv` permanece como dependencia de `requirements.txt` únicamente porque `pydantic-settings` lo usa internamente para leer el archivo `env_file`; ningún módulo del proyecto lo importa de forma directa.
 
 ---
 
@@ -121,9 +124,11 @@ Como ya anticipó `04_Modelo_Base_de_Datos.md` (sección 5), el rate limiting de
 | Decisión | RF | RNF | RN | HU/CU |
 |---|---|---|---|---|
 | Versión de Python (3.13.x) | — | — | — | — |
+| uvicorn como servidor ASGI | — | — | — | — |
 | PyJWT como librería de JWT | RF-007 | RNF-005 | — | HU-002, CU-002 |
 | PyMySQL como driver de MySQL | — | — | — | — |
 | SQLAlchemy 2.0.x (no 2.1 beta) | — | — | — | — |
+| pydantic-settings para carga de variables de entorno (`core/config.py`) | — | RNF-002 | — | — |
 | `flutter_secure_storage` 11.0.0, minSdk 24 compatible con RNF-024 | — | RNF-024 | — | — |
 | Pre-hash SHA-256 antes de `bcrypt` | RF-005, RF-006, RF-014 | RNF-006, RNF-007 | RN-003, RN-011, RN-012 | HU-001, HU-002, HU-005, CU-001, CU-002, CU-004 |
 | Consistencia del pre-hash en registro/login/restablecimiento | RF-005, RF-006, RF-014 | — | RN-003 | CU-001, CU-002, CU-004 |
