@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.0.46
+    container_name: stunex-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: stunex_dev
+      MYSQL_DATABASE: stunex
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"
+    volumes:
+      - stunex_mysql_data:/var/lib/mysql
+
+volumes:
+  stunex_mysql_data:
