@@ -7,8 +7,16 @@ services:
       MYSQL_ROOT_PASSWORD: stunex_dev
       MYSQL_DATABASE: stunex
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # Si el puerto 3306 ya esta ocupado en una maquina especifica, no
+    # modifiques este archivo: crea un docker-compose.override.yml local
+    # (nunca comiteado, ya cubierto por .gitignore) con:
+    #   services:
+    #     mysql:
+    #       ports:
+    #         - "3307:3306"
+    # y ajusta MYSQL_PORT en el .env local de esa maquina.
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - stunex_mysql_data:/var/lib/mysql
 
