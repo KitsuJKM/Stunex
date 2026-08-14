@@ -34,7 +34,10 @@ class RateLimitRule:
         """Comprueba si `key` ya superó el límite, SIN incrementar el contador."""
         return not _limiter.limiter.test(self._item, key)
 
-    def register_failed_attempt(self, key: str) -> None:
-        """Registra explícitamente un intento fallido contra `key`
-        (incrementa el contador). No debe llamarse ante un intento exitoso."""
+    def register_attempt(self, key: str) -> None:
+        """Registra explícitamente un intento contra `key` (incrementa el
+        contador). Nombre neutral a propósito: no todo llamador tiene un
+        concepto de "fallo" (forgot-password cuenta toda solicitud; login
+        cuenta solo los intentos fallidos). Cada llamador decide cuándo
+        invocarlo según su propia regla de negocio."""
         _limiter.limiter.hit(self._item, key)
