@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class RegisterRequest(BaseModel):
-    name: str
+    name: str = Field(min_length=1, max_length=100)  # users.name es VARCHAR(100)
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
 
