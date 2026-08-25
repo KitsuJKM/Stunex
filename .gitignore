@@ -23,6 +23,9 @@ build/
 # Variables de entorno
 .env
 
+# Override local de docker-compose (p. ej. remapeo de puertos por maquina)
+docker-compose.override.yml
+
 # Base de datos local
 *.db
 

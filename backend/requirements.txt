@@ -1,0 +1,17 @@
+fastapi==0.141.1
+sqlalchemy==2.0.51
+alembic==1.19.1
+pydantic==2.13.4
+pydantic-settings==2.15.0
+email-validator==2.3.0
+pyjwt==2.13.0
+bcrypt==5.0.0
+resend==2.35.0
+pymysql==1.2.0
+slowapi==0.1.10
+
+uvicorn==0.52.1
+
+# python-dotenv: dependencia interna de pydantic-settings para leer env_file,
+# no se usa de forma directa (ver core/config.py).
+python-dotenv==1.2.2
